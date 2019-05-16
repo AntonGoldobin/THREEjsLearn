@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <script src="js/three.js"></script>
+    <script src="examples/js/loaders/ColladaLoader.js"></script>
+    <script src="examples/jsm/controls/OrbitControls.js"></script>
+    <script>
+
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
+        camera.position.z = 5
+        var renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setClearColor("#2a2a2a")
+        renderer.setSize(window.innerWidth,window.innerHeight);
+
+        document.body.appendChild(renderer.domElement);
+
+        window.addEventListener('resize', function(){
+          renderer.setSize(window.innerWidth,window.innerHeight);
+          camera.aspect = window.innerWidth/window.innerHeight;
+
+          camera.updateProjectionMatrix();
+
+        })
+
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+
+        loader = new THREE.ColladaLoader();
+
+        loader.load('models/alduin-dragon-dae/alduin-dragon.dae', function(collada) {
+          var dragon = collada.scene;
+          dragon.scale.set(0.01, 0.01, 0.01);
+          dragon.position.set(0.4, 0, 0);
+          dragon.rotateX(0);
+          dragon.rotateY(180);
+          dragon.rotateZ(0);
+          scene.add(collada.scene);
+          return renderer.render(scene, camera);
+        });
+
+        ///LIGHTS
+
+        var lightColor  = '#FAFAFA',
+          ambientLight  = new THREE.AmbientLight( '#EEEEEE' ),
+          hemiLight     = new THREE.HemisphereLight( lightColor, lightColor, 0 ),
+          light         = new THREE.PointLight( lightColor, 1, 10 );
+
+        hemiLight.position.set( -30, 50, 0 );
+        light.position.set( -10, 20, 10 );
+
+        scene.add( ambientLight );
+        scene.add( hemiLight );
+        scene.add( light );
+
+        //Controls
+        var controls = new THREE.OrbitControls( camera );
+        controls.update();
+
+
+        ///RENDERING
+
+        var render = function() {
+          requestAnimationFrame(render);
+          controls.update();
+          renderer.render(scene, camera);
+        }
+
+        function onMouseMove() {
+          event.preventDefault();
+
+          mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+          mouse.y = (event.clientY / window.innerHeight) * 2 + 1;
+
+          raycaster.setFromCamera(mouse, camera);
+
+          var intersect = raycaster.intersectObjects(scene.children, true);
+
+        }
+
+        render();
+
+    </script>
+</body>
+</html>
